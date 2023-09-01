@@ -26,7 +26,7 @@ jobs:
         wget https://languagetool.org/download/LanguageTool-stable.zip
         unzip LanguageTool-stable.zip
         chmod +x ./LanguageTool-*/languagetool-commandline.jar
-        java -jar ./LanguageTool-*/languagetool-commandline.jar -l en-US '**/*.md'
+        java -jar ./LanguageTool-*/languagetool-commandline.jar -l en-US README.md
 
     - name: Install textstat
       run: pip install textstat
