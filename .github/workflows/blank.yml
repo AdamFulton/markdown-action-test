@@ -36,22 +36,19 @@ jobs:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
           const output = `${{steps.languagetool.outputs.result}}`
-          const regex = /document.md:(\d+):(\d+):\s+(.*)/g
+          const regex = /Line (\d+), column (\d+), Rule ID: .*?\nMessage: (.*?)\n/g
           let match
           while (match = regex.exec(output)) {
-            const line = match[1]
-            const column = match[2]
+            const line = parseInt(match[1])
+            const column = parseInt(match[2])
             const message = match[3]
-            github.rest.checks.createAnnotation({
+            
+            console.log(`Annotating line ${line}, column ${column} with message: ${message}`)
+            
+            github.rest.issues.createComment({
               ...context.repo,
-              check_run_id: context.payload.check_run.id,
-              path: "document.md",
-              start_line: parseInt(line),
-              end_line: parseInt(line),
-              start_column: parseInt(column),
-              end_column: parseInt(column) + 10, // This might need adjusting
-              annotation_level: "warning", 
-              message: message
+              issue_number: context.issue.number,
+              body: `🔴 Line ${line}, column ${column}: ${message}`
             })
           }
 
