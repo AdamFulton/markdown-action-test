@@ -21,12 +21,22 @@ jobs:
       with:
         globs: '**/*.md'
 
-    - name: Install codespell
+    - name: Grammar Check using LanguageTool
       run: |
-        pip install codespell
+        wget https://languagetool.org/download/LanguageTool-stable.zip
+        unzip LanguageTool-stable.zip
+        ./LanguageTool-*/languagetool-commandline.jar -l en-US '**/*.md'
 
-    - name: Run spell check
-      run: codespell '**/*.md'
+    - name: Install textstat
+      run: pip install textstat
+
+    - name: Check Content Metrics
+      run: |
+        for file in $(find . -name "*.md"); do
+          echo "Metrics for $file:"
+          textstat $file
+          echo "------------------------"
+        done
 
     - name: Install pandoc
       run: |
