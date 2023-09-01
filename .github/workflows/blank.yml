@@ -22,22 +22,40 @@ jobs:
         globs: '**/*.md'
 
     - name: Grammar Check using LanguageTool
+      id: languagetool
       run: |
         wget https://languagetool.org/download/LanguageTool-stable.zip
         unzip LanguageTool-stable.zip
         chmod +x ./LanguageTool-*/languagetool-commandline.jar
-        java -jar ./LanguageTool-*/languagetool-commandline.jar -l en-US README.md
+        output=$(java -jar ./LanguageTool-*/languagetool-commandline.jar -l en-AU README.md) 
+        echo "::set-output name=result::$output"
 
-    - name: Install textstat
-      run: pip install textstat
+    - name: Annotate
+      uses: actions/github-script@v4
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          const output = `${{steps.languagetool.outputs.result}}`
+          const regex = /document.md:(\d+):(\d+):\s+(.*)/g
+          let match
+          while (match = regex.exec(output)) {
+            const line = match[1]
+            const column = match[2]
+            const message = match[3]
+            github.rest.checks.createAnnotation({
+              ...context.repo,
+              check_run_id: context.payload.check_run.id,
+              path: "document.md",
+              start_line: parseInt(line),
+              end_line: parseInt(line),
+              start_column: parseInt(column),
+              end_column: parseInt(column) + 10, // This might need adjusting
+              annotation_level: "warning", 
+              message: message
+            })
+          }
 
-    - name: Check Content Metrics
-      run: |
-        for file in $(find . -name "*.md"); do
-          echo "Metrics for $file:"
-          textstat $file
-          echo "------------------------"
-        done
+  
 
     - name: Install pandoc
       run: |
