@@ -21,6 +21,13 @@ jobs:
       with:
         globs: '**/*.md'
 
+    - name: Install codespell
+      run: |
+        pip install codespell
+
+    - name: Run spell check
+      run: codespell '**/*.md'
+
     - name: Install pandoc
       run: |
         sudo apt-get update
