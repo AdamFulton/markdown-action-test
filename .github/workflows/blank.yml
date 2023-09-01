@@ -24,8 +24,8 @@ jobs:
     - name: Install pandoc
       run: |
         sudo apt-get update
-        sudo apt-get install -y pandoc
-        sudo apt-get install -y textlive-xetex
+        sudo apt-get install -y pandoc texlive-xetex
+       
         
     - name: Convert Markdown to PDF
       run: pandoc README.md -o output_file.pdf
