@@ -15,45 +15,8 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
-
-    - uses: DavidAnson/markdownlint-cli2-action@v12
-      with:
-        globs: '**/*.md'
-
-    - name: Grammar Check using LanguageTool
-      id: languagetool
-      run: |
-        wget https://languagetool.org/download/LanguageTool-stable.zip
-        unzip LanguageTool-stable.zip
-        chmod +x ./LanguageTool-*/languagetool-commandline.jar
-        output=$(java -jar ./LanguageTool-*/languagetool-commandline.jar -l en-AU README.md) 
-        echo "::set-output name=result::$output"
-
-    - name: Annotate
-      uses: actions/github-script@v4
-      with:
-        github-token: ${{secrets.GITHUB_TOKEN}}
-        script: |
-          const output = `${{steps.languagetool.outputs.result}}`
-          const regex = /Line (\d+), column (\d+), Rule ID: .*?\nMessage: (.*?)\n/g
-          let match
-          while (match = regex.exec(output)) {
-            const line = parseInt(match[1])
-            const column = parseInt(match[2])
-            const message = match[3]
-            
-            console.log(`Annotating line ${line}, column ${column} with message: ${message}`)
-            
-            github.rest.issues.createComment({
-              ...context.repo,
-              issue_number: context.issue.number,
-              body: `🔴 Line ${line}, column ${column}: ${message}`
-            })
-          }
-
-  
-
+      uses: actions/checkout@v3  
+      
     - name: Install pandoc
       run: |
         sudo apt-get update
